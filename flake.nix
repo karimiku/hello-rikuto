@@ -36,5 +36,23 @@
             echo "Hello, rikuto!"
           '';
         });
+
+      # devShells: nix develop で入れる開発用シェル環境。
+      # ここに書いたパッケージが PATH に差し込まれた bash 子シェルが起動する。
+      # mkShell は「dev環境を作るための専用ヘルパー」。
+      devShells = forAllSystems (system:
+        let pkgs = nixpkgs.legacyPackages.${system}; in {
+          default = pkgs.mkShellNoCC {
+            packages = with pkgs; [
+              shellcheck      # シェルスクリプトのlinter
+              nixpkgs-fmt     # .nixファイルのformatter
+            ];
+            shellHook = ''
+              echo "🚀 hello-rikuto dev shell"
+              echo "  shellcheck: $(shellcheck --version | grep version: | head -1)"
+              echo "  nixpkgs-fmt: $(nixpkgs-fmt --version)"
+            '';
+          };
+        });
     };
 }
